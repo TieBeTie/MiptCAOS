@@ -1,0 +1,21 @@
+.data
+   int_format: .string "%d"
+   num_1: .word 0
+   num_2: .word 0
+
+.global main
+
+main:
+
+    push {lr}
+
+    ldr    r0, [int_format
+    ldr    r1, [=num_1]
+    bl     scanf
+
+    ldr    r0, =int_format
+    ldr    r1, =num_1
+    bl     printf
+
+    pop {lr}
+    bx lr

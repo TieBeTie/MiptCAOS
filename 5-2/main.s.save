@@ -1,0 +1,36 @@
+.intel_syntax noprefix
+.global _start
+.text
+  _start:
+
+    mov rax, 12
+    mov rdi, 0
+    syscall
+    mov rcx, rax
+
+    mov rax, 12
+    lea rdi, [rcx + 1]
+    syscall
+
+    loop:
+    mov rax, 0
+    mov rdi, 1
+    lea rsi, [rcx]
+    mov rdx, 1
+    syscall
+
+    mov rax, 1
+    mov rdi, 1
+    lea rsi, [rcx]
+    mov rdx, 1
+    syscall
+    jmp loop
+    # exit
+    mov rax, 60
+    mov rdi, 0
+    syscall
+
+
+.data
+    break:
+       .quad 0

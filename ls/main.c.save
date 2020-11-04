@@ -1,0 +1,42 @@
+#include <dirent.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <time.h>
+
+int ls(char* directory) {
+
+}
+
+int main (int argc, char** args) {
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(args[1]);
+    puts(args[1]);
+
+    char full_path[4096];
+
+    struct stat statbuf;
+    char time_string[255];
+
+    struct tm time_struct;
+
+    if (d) {
+        while((dir = readdir(d)) != NULL) {
+           printf("%s", dir->d_name);
+           strcpy(full_path, args[1]);
+           strcat(full_path, dir->d_name);
+           int check = lstat(full_path, &statbuf);
+           if (check != -1) {
+
+               strftime(time_string, sizeof(time_string), "%Y-%m-%d %H:%M:%s", localtime(&statbuf.st_mtime));
+               printf("%s\n", time_string);
+           }
+        }
+    }
+    return 0;
+}
+

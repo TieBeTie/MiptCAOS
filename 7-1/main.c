@@ -2,15 +2,20 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdint.h>
+
+#define BUFF_SIZE 20
 
 int main() {
     struct tm time_prev;
     struct tm time_now;
-    char buff[20];
+    memset(&time_prev, sizeof(struct tm), 0);
+    char buff[BUFF_SIZE];
     int has_prev = 0;
     while (fgets(buff, sizeof(buff), stdin)) {
        char *end = memchr(buff, '\n', sizeof(buff));
        *end = '\0';
+       memset(&time_now, sizeof(struct tm), 0);
        strptime(buff, "%Y-%m-%d %H:%M", &time_now);
        if (has_prev != 0) {
            time_t unix_time_now = mktime(&time_now);

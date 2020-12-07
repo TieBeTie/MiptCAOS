@@ -7,6 +7,7 @@
 #include <fcntl.h>
 
 const uint64_t BUFF_SIZE = 4096;
+const uint64_t FULL_BUFF_INITIAL_SIZE = 32000;
 
 uint64_t get_num(char** buff) {
     uint64_t num = 0;
@@ -40,7 +41,6 @@ void handle_read(uint64_t* errors_count, uint64_t* warnings_count, char* buff, c
           ++*warnings_count;
       }
     }
-
 }
 
 int main(int argc, char** args) {
@@ -67,10 +67,10 @@ int main(int argc, char** args) {
         char buff[BUFF_SIZE + 1];  // 1 extra byte for endstr
         memset(buff, '\0', sizeof(buff));
 
-        uint64_t buff2_size = 32000 * sizeof(char);
+        uint64_t buff2_size = FULL_BUFF_INITIAL_SIZE * sizeof(char);
         char* buff2 = (char*)malloc(buff2_size);
 
-        memset(buff2, '\0', 32000 * sizeof(char));
+        memset(buff2, '\0', FULL_BUFF_INITIAL_SIZE * sizeof(char));
         uint64_t count = 0;
         uint64_t errors_count = 0;
         uint64_t warnings_count = 0;
@@ -78,7 +78,8 @@ int main(int argc, char** args) {
         while ((now_count = read(fds_pair[0], buff, sizeof(buff) - 1)) > 0) {
             if (count == buff2_size - 1) {
                 char* tmp = realloc(buff2, buff2_size * 2);
-                if (tmp != NULL) {
+                if (tmp == NULL) {
+                    free(buff2);
                     exit(1);
                 } else {
                     buff2 = tmp;

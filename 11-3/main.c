@@ -31,6 +31,14 @@ void sigrtmin_handler(int signum, siginfo_t* info, void* ucontext) {
 
 int main() {
 
+    sigset_t block;
+    sigfillset(&block); // mask for ignore when handler is working.
+
+    if (sigprocmask(SIG_BLOCK, &block, NULL) == -1) {
+        perror("can't block signals.");
+        exit(1);
+    }
+
     if (DEBUG_FLAG) {
         pid = fork();
         printf("%d\n", pid);
@@ -40,12 +48,12 @@ int main() {
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_sigaction = sigrtmin_handler;
     action.sa_flags = SA_RESTART | SA_SIGINFO;
+    action.sa_mask = block;
     sigaction(SIGRTMIN, &action, NULL);
 
-    sigset_t block;
-    sigfillset(&block);
-    sigdelset(&block, SIGRTMIN);
-    sigprocmask(SIG_BLOCK, &block, NULL);
+    sigset_t set;
+    sigfillset(&set);
+    sigdelset(&set, SIGRTMIN);
 
     if (pid != 0) {
         sleep(1);
@@ -55,7 +63,7 @@ int main() {
     }
 
     while (!must_exit) {
-        pause();
+        sigsuspend(&set);
     }
 
     if (pid != 0) {

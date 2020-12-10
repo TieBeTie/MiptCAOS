@@ -1,5 +1,6 @@
 #include <signal.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -26,10 +27,22 @@ void signal_watch(
     memset(action, 0, sizeof(struct sigaction));
     action->sa_handler = handler;
     action->sa_flags = SA_RESTART;
+    sigset_t block;
+    sigfillset(&block); // mask for ignore when handler is working.
+    action->sa_mask = block;
     sigaction(signum, action, NULL);
 }
 
 int main() {
+
+    sigset_t block;
+
+    sigfillset(&block); // mask for ignore
+
+    if (sigprocmask(SIG_BLOCK, &block, NULL) == -1) {
+        perror("can't block signals.");
+        exit(1);
+    }
 
     struct sigaction sigterm_act;
     signal_watch(&sigterm_act, sigterm_handler, SIGTERM);
@@ -43,13 +56,16 @@ int main() {
 
     scanf("%d", &value);
 
+    sigset_t set;
+    sigemptyset(&set); // mask for ignore
+
     while (!must_exit) {
-        pause();
+        sigsuspend(&set);  // temporary unblock signals before we catch one -_-
         if (!must_exit) {
             printf("%d\n", value);
         }
     }
 
     return 0;
-    
+
 }
